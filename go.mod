@@ -1,4 +1,4 @@
-module golift.io/imessage
+module github.com/neild0/imessage
 
 go 1.16
 
