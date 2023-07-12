@@ -22,7 +22,8 @@ type Incoming struct {
 	RowID int64  // RowID is the unique database row id.
 	From  string // From is the handle of the user who sent the message.
 	Text  string // Text is the body of the message.
-	File  bool   // File is true if a file is attached. (no way to access it atm)
+	Group string
+	File  bool // File is true if a file is attached. (no way to access it atm)
 }
 
 // Callback is the type used to return an incoming message to the consuming app.
@@ -166,7 +167,7 @@ func (m *Messages) checkForNewMessages() {
 
 	defer m.closeDB(dbase)
 
-	sql := `SELECT message.rowid as rowid, handle.id as handle, cache_has_attachments, message.text as text ` +
+	sql := `SELECT message.rowid as rowid, handle.id as handle, cache_has_attachments, message.text as text, message.group_title as group ` +
 		`FROM message INNER JOIN handle ON message.handle_id = handle.ROWID ` +
 		`WHERE is_from_me=0 AND message.rowid > $id ORDER BY message.date ASC`
 
@@ -192,6 +193,7 @@ func (m *Messages) checkForNewMessages() {
 			RowID: m.currentID,
 			From:  strings.TrimSpace(query.GetText("handle")),
 			Text:  strings.TrimSpace(query.GetText("text")),
+			Group: strings.TrimSpace(query.GetText("group")),
 			File:  query.GetInt64("cache_has_attachments") == 1,
 		}
 	}
